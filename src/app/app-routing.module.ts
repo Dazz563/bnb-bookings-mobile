@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
+import { AuthGaurd } from './services/auth-gaurd.guard';
 
 const routes: Routes = [
 
@@ -14,11 +15,13 @@ const routes: Routes = [
   },
   {
     path: 'places',
-    loadChildren: () => import('./places/places.module').then(m => m.PlacesPageModule)
+    loadChildren: () => import('./places/places.module').then(m => m.PlacesPageModule),
+    canLoad: [AuthGaurd],
   },
   {
     path: 'bookings',
-    loadChildren: () => import('./bookings/bookings.module').then(m => m.BookingsPageModule)
+    loadChildren: () => import('./bookings/bookings.module').then(m => m.BookingsPageModule),
+    canLoad: [AuthGaurd],
   },
 ];
 
