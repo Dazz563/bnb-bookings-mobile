@@ -8,13 +8,14 @@ import { DiscoverPageRoutingModule } from './discover-routing.module';
 
 import { DiscoverPage } from './discover.page';
 
+
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    DiscoverPageRoutingModule
+    DiscoverPageRoutingModule,
   ],
   declarations: [DiscoverPage]
 })
-export class DiscoverPageModule {}
+export class DiscoverPageModule { }

@@ -8,6 +8,7 @@ import { PlacesPageRoutingModule } from './places-routing.module';
 
 import { PlacesPage } from './places.page';
 
+
 @NgModule({
   imports: [
     CommonModule,
@@ -17,4 +18,4 @@ import { PlacesPage } from './places.page';
   ],
   declarations: [PlacesPage]
 })
-export class PlacesPageModule {}
+export class PlacesPageModule { }

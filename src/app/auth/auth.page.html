@@ -5,6 +5,17 @@
 </ion-header>
 
 <ion-content class="ion-padding">
+  <ion-item>
+    <ion-label position="stacked">Email</ion-label>
+    <ion-input type="email"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label position="stacked">Password</ion-label>
+    <ion-input type="password"></ion-input>
+  </ion-item>
+  <!-- <ion-spinner color="primary"
+               *ngIf="isLoading">
+  </ion-spinner> -->
   <ion-button color="primary"
               (click)="onLogin()">Login</ion-button>
 </ion-content>

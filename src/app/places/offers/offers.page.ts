@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { IonItemSliding } from '@ionic/angular';
 import { Place, PlacesService } from 'src/app/services/places.service';
 
 @Component({
@@ -14,6 +15,10 @@ export class OffersPage implements OnInit {
 
   ngOnInit() {
     this.offers = this.placesService.getPlaces();
+  }
+
+  onCloseSlide(slidingItem: IonItemSliding) {
+    slidingItem.close();
   }
 
 }

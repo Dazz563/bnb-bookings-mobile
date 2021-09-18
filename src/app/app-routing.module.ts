@@ -16,12 +16,12 @@ const routes: Routes = [
   {
     path: 'places',
     loadChildren: () => import('./places/places.module').then(m => m.PlacesPageModule),
-    canLoad: [AuthGaurd],
+    // canLoad: [AuthGaurd],
   },
   {
     path: 'bookings',
     loadChildren: () => import('./bookings/bookings.module').then(m => m.BookingsPageModule),
-    canLoad: [AuthGaurd],
+    // canLoad: [AuthGaurd],
   },
 ];
 
