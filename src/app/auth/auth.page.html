@@ -26,7 +26,7 @@
             <!-- WARNING -->
             <ion-item lines="none"
                       *ngIf="!emailCtrl.valid && emailCtrl.touched">
-              <ion-label class="warn-msg">Should be a valid email address</ion-label>
+              <p>Should be a valid email address</p>
             </ion-item>
 
             <ion-item>
@@ -41,7 +41,7 @@
             <!-- WARNING -->
             <ion-item lines="none"
                       *ngIf="!passwordCtrl.valid && passwordCtrl.touched">
-              <ion-label class="warn-msg">Invalid password min 6 characters</ion-label>
+              <p>Invalid password min 6 characters</p>
             </ion-item>
 
           </ion-list>
