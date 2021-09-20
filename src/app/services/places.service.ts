@@ -1,4 +1,7 @@
 import { Injectable } from '@angular/core';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { take, map } from 'rxjs/operators';
+import { AuthService } from './auth.service';
 
 export class Place {
   id: string;
@@ -8,6 +11,7 @@ export class Place {
   price: number;
   availableFrom: Date;
   availableTo: Date;
+  userId: string;
 }
 
 @Injectable({
@@ -15,7 +19,7 @@ export class Place {
 })
 export class PlacesService {
 
-  private _places: Place[] = [
+  private _places = new BehaviorSubject<Place[]>([
     {
       id: 'p1',
       title: 'Manhattan Mansion',
@@ -24,6 +28,7 @@ export class PlacesService {
       price: 149.99,
       availableFrom: new Date('2019-01-01'),
       availableTo: new Date('2019-12-31'),
+      userId: 'abc',
     },
     {
       id: 'p2',
@@ -33,6 +38,7 @@ export class PlacesService {
       price: 189.99,
       availableFrom: new Date('2019-01-01'),
       availableTo: new Date('2019-12-31'),
+      userId: 'abc',
     },
     {
       id: 'p3',
@@ -42,20 +48,46 @@ export class PlacesService {
       price: 99.99,
       availableFrom: new Date('2019-01-01'),
       availableTo: new Date('2019-12-31'),
+      userId: 'abc',
     },
-  ];
+  ]);
 
   // get places() {
   //   return [...this._places];
   // }
 
-  constructor() { }
+  constructor(
+    private authService: AuthService,
+  ) { }
 
   getPlaces() {
-    return [...this._places];
+    return this._places.asObservable();
   }
 
   getPlace(id: string) {
-    return { ...this._places.find(place => place.id === id) };
+    return this.getPlaces().pipe(
+      take(1),
+      map(places => {
+        return { ...places.find(place => place.id === id) };
+      }),
+    );
+  }
+
+  addPlace(title: string, description: string, price: number, dateFrom: Date, dateTo: Date) {
+    const newPlace: Place = {
+      id: Math.random().toString(),
+      title: title,
+      description: description,
+      imageUrl: '../../assets/Carnegie-Mansion-nyc.jpg',
+      price: price,
+      availableFrom: dateFrom,
+      availableTo: dateTo,
+      userId: this.authService.userId,
+    }
+    this.getPlaces().pipe(
+      take((1)),
+    ).subscribe((places: Place[]) => {
+      this._places.next(places.concat(newPlace));
+    })
   }
 }
