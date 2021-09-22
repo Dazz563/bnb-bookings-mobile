@@ -23,7 +23,7 @@
         <p>{{ place.description }}</p>
       </ion-col>
     </ion-row>
-    <ion-row>
+    <ion-row *ngIf="isBookable">
       <ion-col size-sm="8"
                offset-sm="2"
                class="ion-text-center">
