@@ -1,10 +1,12 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { take, map, tap, delay } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 
 export class Place {
-  id: string;
+  id?: string;
   title: string;
   description: string;
   imageUrl: string;
@@ -58,6 +60,8 @@ export class PlacesService {
 
   constructor(
     private authService: AuthService,
+    private http: HttpClient,
+    private afDB: AngularFirestore,
   ) { }
 
   getPlaces() {
@@ -75,7 +79,7 @@ export class PlacesService {
 
   addPlace(title: string, description: string, price: number, dateFrom: Date, dateTo: Date) {
     const newPlace: Place = {
-      id: Math.random().toString(),
+      // id: Math.random().toString(),
       title: title,
       description: description,
       imageUrl: '../../assets/Carnegie-Mansion-nyc.jpg',
@@ -84,13 +88,18 @@ export class PlacesService {
       availableTo: dateTo,
       userId: this.authService.userId,
     }
-    return this.getPlaces().pipe(
-      take((1)),
-      delay(2000),
-      tap((places) => {
-        this._places.next(places.concat(newPlace));
-      })
-    );
+    // Firebase add
+    return this.afDB.collection('offered-places').add(newPlace).then(res => {
+      console.log('Add offer res: ', res)
+    });
+
+    // return this.getPlaces().pipe(
+    //   take((1)),
+    //   delay(2000),
+    //   tap((places) => {
+    //     this._places.next(places.concat(newPlace));
+    //   })
+    // );
   }
 
   updatePlace(placeId: string, title: string, description: string) {

@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "ionic-starter-project-a31e1"
+  },
+  "targets": {
+    "ionic-starter-project-a31e1": {
+      "hosting": {
+        "app": [
+          "ionic-starter-project-a31e1"
+        ]
+      }
+    }
+  }
+}
