@@ -15,6 +15,8 @@ export class EditOfferPage implements OnInit, OnDestroy {
   place: Place;
   form: FormGroup;
   private placesSub: Subscription;
+  isLoading = false;
+  placeId: string;
 
   constructor(
     private route: ActivatedRoute,
@@ -31,6 +33,8 @@ export class EditOfferPage implements OnInit, OnDestroy {
         this.navCtrl.navigateBack('/places/tabs/offers');
         return;
       }
+      this.placeId = paramMap.get('placeId');
+      this.isLoading = true;
       this.placesSub = this.placesService.getPlace(paramMap.get('placesId')).subscribe((place: Place) => {
         this.place = place;
 
@@ -44,6 +48,8 @@ export class EditOfferPage implements OnInit, OnDestroy {
             validators: [Validators.required, Validators.maxLength(180)]
           }),
         })
+        this.isLoading = false;
+
       })
     })
   }

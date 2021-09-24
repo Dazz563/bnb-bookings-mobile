@@ -1,9 +1,41 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { take, map, tap, delay } from 'rxjs/operators';
+import { BehaviorSubject, from, Observable, of } from 'rxjs';
+import { take, map, tap, delay, switchMap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
+
+
+// {
+//   id: 'p1',
+//   title: 'Manhattan Mansion',
+//   description: 'In the heart of New York City',
+//   imageUrl: '../../assets/Carnegie-Mansion-nyc.jpg',
+//   price: 149.99,
+//   availableFrom: new Date('2019-01-01'),
+//   availableTo: new Date('2019-12-31'),
+//   userId: 'abc',
+// },
+// {
+//   id: 'p2',
+//   title: `L'Amour Toujours`,
+//   description: 'A romantic place in Paris',
+//   imageUrl: '../../assets/lAmourToujours.jpg',
+//   price: 189.99,
+//   availableFrom: new Date('2019-01-01'),
+//   availableTo: new Date('2019-12-31'),
+//   userId: 'abc',
+// },
+// {
+//   id: 'p3',
+//   title: `The Foggy Palace`,
+//   description: 'Not your average city trip!',
+//   imageUrl: '../../assets/foggy-sunrise-in-the-alhambra-palace-guido-montanes-castillo.jpg',
+//   price: 99.99,
+//   availableFrom: new Date('2019-01-01'),
+//   availableTo: new Date('2019-12-31'),
+//   userId: 'abc',
+// },
 
 export class Place {
   id?: string;
@@ -11,8 +43,8 @@ export class Place {
   description: string;
   imageUrl: string;
   price: number;
-  availableFrom: Date;
-  availableTo: Date;
+  availableFrom: Date | any;
+  availableTo: Date | any;
   userId: string;
 }
 
@@ -21,38 +53,7 @@ export class Place {
 })
 export class PlacesService {
 
-  private _places = new BehaviorSubject<Place[]>([
-    {
-      id: 'p1',
-      title: 'Manhattan Mansion',
-      description: 'In the heart of New York City',
-      imageUrl: '../../assets/Carnegie-Mansion-nyc.jpg',
-      price: 149.99,
-      availableFrom: new Date('2019-01-01'),
-      availableTo: new Date('2019-12-31'),
-      userId: 'abc',
-    },
-    {
-      id: 'p2',
-      title: `L'Amour Toujours`,
-      description: 'A romantic place in Paris',
-      imageUrl: '../../assets/lAmourToujours.jpg',
-      price: 189.99,
-      availableFrom: new Date('2019-01-01'),
-      availableTo: new Date('2019-12-31'),
-      userId: 'abc',
-    },
-    {
-      id: 'p3',
-      title: `The Foggy Palace`,
-      description: 'Not your average city trip!',
-      imageUrl: '../../assets/foggy-sunrise-in-the-alhambra-palace-guido-montanes-castillo.jpg',
-      price: 99.99,
-      availableFrom: new Date('2019-01-01'),
-      availableTo: new Date('2019-12-31'),
-      userId: 'abc',
-    },
-  ]);
+  private _places = new BehaviorSubject<Place[]>([]);
 
   // get places() {
   //   return [...this._places];
@@ -68,16 +69,55 @@ export class PlacesService {
     return this._places.asObservable();
   }
 
+  fetchPlaces() {
+    return from(
+      this.afDB
+        .collection('offered-places')
+        .snapshotChanges()
+        .pipe(
+          map((offers) => {
+            return offers.map((offer) => {
+              return <any>{
+                id: offer.payload.doc.id,
+                ...(offer.payload.doc.data() as any),
+              };
+            });
+          }),
+          tap((places) => {
+            this._places.next(places);
+          })
+
+        ),
+    )
+  }
+
   getPlace(id: string) {
-    return this.getPlaces().pipe(
-      take(1),
-      map(places => {
-        return { ...places.find(place => place.id === id) };
-      }),
-    );
+    // return from(
+    //   this.afDB.collection('offered-places').doc(id)
+    //     .snapshotChanges().pipe(
+    //       map((offer) => {
+    //         return offer.payload.id
+    //       })
+    //     )
+    // )
+    // return this.getPlaces().pipe(
+    //   take(1),
+    //   map(places => {
+    //     return { ...places.find(place => place.id === id) };
+    //   }),
+    // );
+
+    return from(
+      this.afDB.collection('offered-places').doc(id)
+        .valueChanges().pipe(
+          take(1),
+          tap((res) => console.log(res))
+        )
+    )
   }
 
   addPlace(title: string, description: string, price: number, dateFrom: Date, dateTo: Date) {
+    let generatedId: string;
     const newPlace: Place = {
       // id: Math.random().toString(),
       title: title,
@@ -89,10 +129,18 @@ export class PlacesService {
       userId: this.authService.userId,
     }
     // Firebase add
-    return this.afDB.collection('offered-places').add(newPlace).then(res => {
-      console.log('Add offer res: ', res)
-    });
-
+    return from(this.afDB.collection('offered-places').add(newPlace)).pipe(
+      switchMap((resData) => {
+        console.log(resData);
+        generatedId = resData.id;
+        return this.getPlaces();
+      }),
+      take(1),
+      tap(places => {
+        newPlace.id = generatedId;
+        this._places.next(places.concat(newPlace));
+      })
+    )
     // return this.getPlaces().pipe(
     //   take((1)),
     //   delay(2000),
@@ -103,12 +151,18 @@ export class PlacesService {
   }
 
   updatePlace(placeId: string, title: string, description: string) {
-    return this._places.pipe(
+    let updatedPlace = {
+      title,
+      description,
+    }
+
+    let updatedPlaces: Place[];
+
+    return this.getPlaces().pipe(
       take(1),
-      delay(2000),
-      tap(places => {
+      switchMap(places => {
         const updatedPlaceIndex = places.findIndex(pl => pl.id === placeId);
-        const updatedPlaces = [...places];
+        updatedPlaces = [...places];
         const oldPlace = updatedPlaces[updatedPlaceIndex];
         updatedPlaces[updatedPlaceIndex] = {
           id: oldPlace.id,
@@ -120,6 +174,9 @@ export class PlacesService {
           availableTo: oldPlace.availableTo,
           userId: oldPlace.userId,
         };
+        return from(this.afDB.collection('offered-places').doc(placeId).update(updatedPlace));
+      }),
+      tap((resData) => {
         this._places.next(updatedPlaces);
       })
     )
