@@ -48,6 +48,16 @@ export class Place {
   userId: string;
 }
 
+export class Coordinates {
+  lat: number;
+  lng: number;
+}
+
+export class PlaceLocation extends Coordinates {
+  address: string;
+  staticMapImageUrl: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
