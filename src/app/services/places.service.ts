@@ -161,7 +161,18 @@ export class PlacesService {
     return this.getPlaces().pipe(
       take(1),
       switchMap(places => {
+        if (!places || places.length <= 0) {
+          return this.fetchPlaces();
+        }
+        else {
+          return of(places);
+        }
+      }),
+      switchMap(places => {
+        console.log('Places in switchmap: ', places);
         const updatedPlaceIndex = places.findIndex(pl => pl.id === placeId);
+        console.log('updatedPlaceIndex: ', updatedPlaceIndex);
+
         updatedPlaces = [...places];
         const oldPlace = updatedPlaces[updatedPlaceIndex];
         updatedPlaces[updatedPlaceIndex] = {
