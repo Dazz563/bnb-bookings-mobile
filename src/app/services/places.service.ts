@@ -46,6 +46,7 @@ export class Place {
   availableFrom: Date | any;
   availableTo: Date | any;
   userId: string;
+  location: PlaceLocation;
 }
 
 export class Coordinates {
@@ -126,7 +127,7 @@ export class PlacesService {
     )
   }
 
-  addPlace(title: string, description: string, price: number, dateFrom: Date, dateTo: Date) {
+  addPlace(title: string, description: string, price: number, dateFrom: Date, dateTo: Date, location: PlaceLocation) {
     let generatedId: string;
     const newPlace: Place = {
       // id: Math.random().toString(),
@@ -137,6 +138,7 @@ export class PlacesService {
       availableFrom: dateFrom,
       availableTo: dateTo,
       userId: this.authService.userId,
+      location: location
     }
     // Firebase add
     return from(this.afDB.collection('offered-places').add(newPlace)).pipe(
@@ -194,6 +196,7 @@ export class PlacesService {
           availableFrom: oldPlace.availableFrom,
           availableTo: oldPlace.availableTo,
           userId: oldPlace.userId,
+          location: oldPlace.location,
         };
         return from(this.afDB.collection('offered-places').doc(placeId).update(updatedPlace));
       }),
