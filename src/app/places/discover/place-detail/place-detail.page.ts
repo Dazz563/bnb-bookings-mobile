@@ -6,6 +6,7 @@ import { CreateBookingComponent } from 'src/app/bookings/create-booking/create-b
 import { AuthService } from 'src/app/services/auth.service';
 import { BookingService } from 'src/app/services/booking.service';
 import { Place, PlacesService } from 'src/app/services/places.service';
+import { MapModalComponent } from 'src/app/shared/map-modal/map-modal.component';
 
 @Component({
   selector: 'app-place-detail',
@@ -17,6 +18,7 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
   place: Place;
   isBookable = false;
   private placesSub: Subscription;
+  isLoading = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -35,9 +37,13 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
         this.navCtrl.navigateBack('/places/tabs/discover');
         return;
       }
+
+      this.isLoading = true;
+
       this.placesSub = this.placeService.getPlace(paramMap.get('placeId')).subscribe((place: Place) => {
         this.isBookable = place.userId !== this.authService.userId;
         this.place = place;
+        this.isLoading = false;
       });
     })
   }
@@ -110,6 +116,21 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
             });
         }
       });
+  }
+
+  onShowFullMap() {
+    this.modalCtrl.create({
+      component: MapModalComponent,
+      componentProps: {
+        center: { lat: this.place.location.lat, lng: this.place.location.lng },
+        selectable: false,
+        closeButtonText: 'Close',
+        title: this.place.location.address
+      }
+    })
+      .then(modalEl => {
+        modalEl.present();
+      })
   }
 
   ngOnDestroy(): void {

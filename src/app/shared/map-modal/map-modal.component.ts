@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, Renderer2, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, OnDestroy, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { environment } from 'src/environments/environment';
 
@@ -10,6 +10,10 @@ import { environment } from 'src/environments/environment';
 export class MapModalComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild('map') mapElementRef: ElementRef;
+  @Input() center = { lat: -26.170, lng: 27.971 };
+  @Input() selectable = true;
+  @Input() closeButtonText = 'Cancel';
+  @Input() title = 'Pick Location';
   clickListener: any;
   googleMaps: any;
 
@@ -26,7 +30,7 @@ export class MapModalComponent implements OnInit, AfterViewInit, OnDestroy {
       this.googleMaps = googleMaps;
       const mapEl = this.mapElementRef.nativeElement;
       const map = new googleMaps.Map(mapEl, {
-        center: { lat: -26.170, lng: 27.971 },
+        center: this.center,
         zoom: 10
       });
 
@@ -35,15 +39,23 @@ export class MapModalComponent implements OnInit, AfterViewInit, OnDestroy {
       });
 
       // Get Coord from tapping on map
-      this.clickListener = map.addListener('click', event => {
-        const selectedCoords = {
-          lat: event.latLng.lat(),
-          lng: event.latLng.lng(),
-        };
-        this.modalCtrl.dismiss(selectedCoords);
-      })
-
-
+      if (this.selectable) {
+        this.clickListener = map.addListener('click', event => {
+          const selectedCoords = {
+            lat: event.latLng.lat(),
+            lng: event.latLng.lng(),
+          };
+          this.modalCtrl.dismiss(selectedCoords);
+        });
+      }
+      else {
+        const marker = new googleMaps.Marker({
+          position: this.center,
+          map: map,
+          title: 'Picked Location'
+        });
+        marker.setMap(map);
+      }
     }).catch(err => {
       console.log()
     });
@@ -78,7 +90,9 @@ export class MapModalComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.googleMaps.event.removeListener(this.clickListener);
+    if (this.clickListener) {
+      this.googleMaps.event.removeListener(this.clickListener);
+    }
   }
 
 }
